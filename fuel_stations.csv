@@ -1,0 +1,51 @@
+name,address,city,state,rack_id,retail_price
+PILOT TRAVEL CENTER I-80 EXIT 23,1234 Highway 80,Rock Springs,WY,1001,3.671
+LOVE'S TRAVEL STOP I-40 EXIT 89,5678 Route 40,Flagstaff,AZ,1002,3.892
+TA TRAVEL CENTER I-10 EXIT 156,9012 Interstate 10,El Paso,TX,1003,3.445
+FLYING J I-5 EXIT 234,3456 Pacific Highway,Medford,OR,1004,4.123
+PILOT I-90 EXIT 67,7890 Mountain Pass,Spokane,WA,1005,3.987
+LOVE'S I-70 EXIT 123,2345 Desert Road,Grand Junction,CO,1006,3.234
+TA I-95 EXIT 89,4567 Coastal Highway,Jacksonville,FL,1007,3.567
+FLYING J I-35 EXIT 156,6789 Central Expressway,Austin,TX,1008,3.789
+PILOT I-75 EXIT 234,8901 Dixie Highway,Atlanta,GA,1009,3.456
+LOVE'S I-55 EXIT 67,1234 Mississippi River Road,Memphis,TN,1010,3.345
+TA I-65 EXIT 123,5678 Hoosier Highway,Indianapolis,IN,1011,3.678
+FLYING J I-81 EXIT 89,9012 Appalachian Trail,Roanoke,VA,1012,3.234
+PILOT I-87 EXIT 156,3456 Adirondack Highway,Albany,NY,1013,3.789
+LOVE'S I-91 EXIT 234,6789 New England Highway,Hartford,CT,1014,3.567
+TA I-93 EXIT 67,1234 Granite State Highway,Concord,NH,1015,3.456
+FLYING J I-89 EXIT 123,5678 Green Mountain Highway,Burlington,VT,1016,3.234
+PILOT I-84 EXIT 89,9012 Columbia River Highway,Portland,OR,1017,3.678
+LOVE'S I-86 EXIT 156,3456 Southern Tier Expressway,Binghamton,NY,1018,3.345
+TA I-88 EXIT 234,6789 Susquehanna Highway,Schenectady,NY,1019,3.789
+FLYING J I-90 EXIT 67,1234 Massachusetts Turnpike,Boston,MA,1020,3.567
+PILOT I-94 EXIT 123,5678 Great Lakes Highway,Milwaukee,WI,1021,3.234
+LOVE'S I-96 EXIT 89,9012 Michigan Highway,Lansing,MI,1022,3.678
+TA I-69 EXIT 156,3456 Hoosier Heartland Highway,Fort Wayne,IN,1023,3.456
+FLYING J I-80 EXIT 234,6789 Lincoln Highway,Omaha,NE,1024,3.345
+PILOT I-76 EXIT 67,1234 Pennsylvania Turnpike,Harrisburg,PA,1025,3.789
+LOVE'S I-78 EXIT 123,5678 Lehigh Valley Highway,Allentown,PA,1026,3.567
+TA I-79 EXIT 89,9012 Appalachian Corridor,Pittsburgh,PA,1027,3.234
+FLYING J I-83 EXIT 156,3456 Susquehanna Trail,York,PA,1028,3.678
+PILOT I-99 EXIT 234,6789 Bald Eagle Valley Highway,State College,PA,1029,3.456
+LOVE'S I-81 EXIT 67,1234 Valley Highway,Scranton,PA,1030,3.345
+TA I-80 EXIT 123,5678 Keystone Shortway,Stroudsburg,PA,1031,3.789
+FLYING J I-78 EXIT 89,9012 Northeast Extension,Bethlehem,PA,1032,3.567
+PILOT I-76 EXIT 156,3456 Schuylkill Expressway,Philadelphia,PA,1033,3.234
+LOVE'S I-95 EXIT 234,6789 Delaware Expressway,Wilmington,DE,1034,3.678
+TA I-495 EXIT 67,1234 Capital Beltway,Washington,DC,1035,3.456
+FLYING J I-66 EXIT 123,5678 Potomac Highway,Arlington,VA,1036,3.345
+PILOT I-95 EXIT 89,9012 Atlantic Coast Highway,Baltimore,MD,1037,3.789
+LOVE'S I-83 EXIT 156,3456 Baltimore Beltway,Baltimore,MD,1038,3.567
+TA I-70 EXIT 234,6789 National Freeway,Frederick,MD,1039,3.234
+FLYING J I-68 EXIT 67,1234 Appalachian Highway,Cumberland,MD,1040,3.678
+PILOT I-81 EXIT 123,5678 Valley Pike,Winchester,VA,1041,3.456
+LOVE'S I-64 EXIT 89,9012 Mountain Parkway,Lexington,KY,1042,3.345
+TA I-75 EXIT 156,3456 Dixie Highway,Lexington,KY,1043,3.789
+FLYING J I-65 EXIT 234,6789 Interstate Highway,Louisville,KY,1044,3.567
+PILOT I-71 EXIT 67,1234 Ohio River Highway,Cincinnati,OH,1045,3.234
+LOVE'S I-75 EXIT 123,5678 Dixie Highway,Dayton,OH,1046,3.678
+TA I-70 EXIT 89,9012 National Road,Columbus,OH,1047,3.456
+FLYING J I-71 EXIT 156,3456 Cleveland Highway,Cleveland,OH,1048,3.345
+PILOT I-90 EXIT 234,6789 Lake Erie Highway,Toledo,OH,1049,3.789
+LOVE'S I-80 EXIT 67,1234 Lincoln Highway,Youngstown,OH,1050,3.567
