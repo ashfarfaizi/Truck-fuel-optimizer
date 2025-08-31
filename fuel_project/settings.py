@@ -29,33 +29,18 @@ INSTALLED_APPS = [
     'fuel_route',
 ]
 
-# Middleware
+# Middleware - Minimal for API-only application
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-
-    # for serving static files in production
     'whitenoise.middleware.WhiteNoiseMiddleware',
-
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # Disable CSRF for API-only application
-    # 'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CSRF settings for API
-CSRF_TRUSTED_ORIGINS = [
-    'https://web-production-623ca.up.railway.app',
-    'https://*.up.railway.app',
-]
-
-# Disable CSRF for API endpoints in production
-if not DEBUG:
-    CSRF_COOKIE_SECURE = False
-    CSRF_USE_SESSIONS = False
-    CSRF_COOKIE_HTTPONLY = False
+# CSRF disabled for API-only application
+CSRF_COOKIE_SECURE = False
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
 
 ROOT_URLCONF = 'fuel_project.urls'
 
