@@ -45,8 +45,19 @@ def fuel_route_view(request):
     view = FuelRouteView()
     return view.post(drf_request)
 
+@csrf_exempt
+def test_api_view(request):
+    """Simple test endpoint to verify API is working"""
+    return JsonResponse({
+        'status': 'success',
+        'message': 'API is working!',
+        'method': request.method,
+        'path': request.path
+    })
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/route/', fuel_route_view, name='fuel_route'),
+    path('api/test/', test_api_view, name='test_api'),
     path('', api_info, name='api_info'),
 ]
