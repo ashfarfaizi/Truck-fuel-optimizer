@@ -3,8 +3,7 @@ services:
     name: truck-fuel-optimizer
     env: python
     buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python manage.py collectstatic --noinput
-    startCommand: gunicorn truck_fuel_optimizer.wsgi:application
-    postDeployCommand: python manage.py migrate
+    startCommand: gunicorn fuel_project.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
