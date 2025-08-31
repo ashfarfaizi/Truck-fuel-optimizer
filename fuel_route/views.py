@@ -2,6 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.cache import cache
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 import requests
 import json
 import time
@@ -12,6 +14,7 @@ from .models import FuelStation
 from .serializers import RouteRequestSerializer, RouteResponseSerializer, ErrorResponseSerializer
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class FuelRouteView(APIView):
     """
     API View to calculate optimal fuel stops along a route between two US locations.
