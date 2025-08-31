@@ -8,6 +8,9 @@ class CSRFExemptMiddleware(MiddlewareMixin):
     def process_view(self, request, view_func, view_args, view_kwargs):
         # Check if the request is for an API endpoint
         if request.path.startswith('/api/'):
-            # Exempt from CSRF
+            # Completely disable CSRF for API endpoints
             setattr(request, '_dont_enforce_csrf_checks', True)
+            setattr(view_func, 'csrf_exempt', True)
+            # Also disable CSRF middleware for this request
+            request.META['CSRF_COOKIE'] = None
         return None

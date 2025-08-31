@@ -53,6 +53,12 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.up.railway.app',
 ]
 
+# Disable CSRF for API endpoints in production
+if not DEBUG:
+    CSRF_COOKIE_SECURE = False
+    CSRF_USE_SESSIONS = False
+    CSRF_COOKIE_HTTPONLY = False
+
 ROOT_URLCONF = 'fuel_project.urls'
 
 # Templates
