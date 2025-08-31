@@ -42,6 +42,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    # Custom middleware for API CSRF exemption
+    'fuel_project.middleware.CSRFExemptMiddleware',
+]
+
+# CSRF settings for API
+CSRF_TRUSTED_ORIGINS = [
+    'https://web-production-623ca.up.railway.app',
+    'https://*.up.railway.app',
 ]
 
 ROOT_URLCONF = 'fuel_project.urls'
