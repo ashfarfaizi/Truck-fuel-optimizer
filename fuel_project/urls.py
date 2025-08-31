@@ -80,10 +80,27 @@ def test_api_view(request):
         'path': request.path
     })
 
+@csrf_exempt
+def test_post_view(request):
+    """Test POST endpoint to verify CSRF is disabled"""
+    if request.method == 'POST':
+        return JsonResponse({
+            'status': 'success',
+            'message': 'POST request working!',
+            'method': request.method,
+            'path': request.path
+        })
+    else:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Only POST method allowed'
+        }, status=405)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/route/', fuel_route_view, name='fuel_route'),
     path('api/simple-route/', simple_route_view, name='simple_route'),
     path('api/test/', test_api_view, name='test_api'),
+    path('api/test-post/', test_post_view, name='test_post'),
     path('', api_info, name='api_info'),
 ]
