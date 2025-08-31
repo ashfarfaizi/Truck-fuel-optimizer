@@ -46,6 +46,31 @@ def fuel_route_view(request):
     return view.post(drf_request)
 
 @csrf_exempt
+def simple_route_view(request):
+    """Simple route endpoint without DRF to test CSRF"""
+    import json
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Simple route endpoint working!',
+                'received_data': data,
+                'method': request.method
+            })
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid JSON data'
+            }, status=400)
+    else:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Only POST method allowed'
+        }, status=405)
+
+@csrf_exempt
 def test_api_view(request):
     """Simple test endpoint to verify API is working"""
     return JsonResponse({
@@ -58,6 +83,7 @@ def test_api_view(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/route/', fuel_route_view, name='fuel_route'),
+    path('api/simple-route/', simple_route_view, name='simple_route'),
     path('api/test/', test_api_view, name='test_api'),
     path('', api_info, name='api_info'),
 ]
