@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 def api_info(request):
     """Basic API info endpoint"""
@@ -28,6 +29,7 @@ def api_info(request):
         }
     })
 
+@csrf_exempt
 def fuel_route_view(request):
     """Direct import to avoid circular imports"""
     from fuel_route.views import FuelRouteView
