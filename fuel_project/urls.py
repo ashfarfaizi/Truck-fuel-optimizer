@@ -31,8 +31,17 @@ def api_info(request):
 def fuel_route_view(request):
     """Direct import to avoid circular imports"""
     from fuel_route.views import FuelRouteView
+    from rest_framework.test import APIRequestFactory
+    from rest_framework.request import Request
+    
+    # Convert Django request to DRF request
+    factory = APIRequestFactory()
+    drf_request = factory.post('/api/route/', request.body, content_type=request.content_type)
+    drf_request = Request(drf_request)
+    drf_request.user = request.user
+    
     view = FuelRouteView()
-    return view.post(request)
+    return view.post(drf_request)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
