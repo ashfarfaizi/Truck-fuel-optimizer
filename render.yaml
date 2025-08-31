@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: truck-fuel-optimizer
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn truck_fuel_optimizer.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
