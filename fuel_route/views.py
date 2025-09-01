@@ -12,6 +12,7 @@ from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
 from .models import FuelStation
 from .serializers import RouteRequestSerializer, RouteResponseSerializer, ErrorResponseSerializer
+import os
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -68,7 +69,10 @@ class FuelRouteView(APIView):
             if location:
                 coords = (location.latitude, location.longitude)
                 # Cache geocoding result for 24 hours
-                cache.set(cache_key, coords, 86400)
+                try:
+                    cache.set(cache_key, coords, 86400)
+                except Exception as e:
+                    print(f"Error caching geocode result: {e}")
                 return coords
                 
         except Exception as e:
@@ -83,12 +87,12 @@ class FuelRouteView(APIView):
         """
         url = "https://api.openrouteservice.org/v2/directions/driving-car"
         
-        # IMPORTANT: Replace with your actual OpenRouteService API key
-        # Get free key from: https://openrouteservice.org/dev/#/signup
-        # For testing, we'll use a fallback approach
+        # Get API key from environment variable or use fallback
+        api_key = os.environ.get('OPENROUTE_API_KEY', '')
+        
         headers = {
             'Accept': 'application/json, application/geo+json',
-            'Authorization': 'Bearer 5b3ce3597851110001cf6248YOUR_API_KEY_HERE',  # ⚠️ REPLACE THIS
+            'Authorization': f'Bearer {api_key}' if api_key else '',
             'Content-Type': 'application/json'
         }
         
@@ -100,31 +104,35 @@ class FuelRouteView(APIView):
         }
         
         try:
-            response = requests.post(url, json=body, headers=headers, timeout=15)
-            
-            if response.status_code == 200:
-                data = response.json()
-                route = data['features'][0]
-                coordinates = route['geometry']['coordinates']
-                distance_meters = route['properties']['summary']['distance']
-                distance_miles = distance_meters * 0.000621371
+            # Only make API call if we have a valid key
+            if api_key:
+                response = requests.post(url, json=body, headers=headers, timeout=15)
                 
-                # Convert coordinates from [lng, lat] to [lat, lng] format
-                route_coords = [[coord[1], coord[0]] for coord in coordinates]
-                
-                return {
-                    'coordinates': route_coords,
-                    'distance_miles': distance_miles,
-                    'polyline': route['geometry'],
-                    'api_used': 'openrouteservice'
-                }
+                if response.status_code == 200:
+                    data = response.json()
+                    route = data['features'][0]
+                    coordinates = route['geometry']['coordinates']
+                    distance_meters = route['properties']['summary']['distance']
+                    distance_miles = distance_meters * 0.000621371
+                    
+                    # Convert coordinates from [lng, lat] to [lat, lng] format
+                    route_coords = [[coord[1], coord[0]] for coord in coordinates]
+                    
+                    return {
+                        'coordinates': route_coords,
+                        'distance_miles': distance_miles,
+                        'polyline': route['geometry'],
+                        'api_used': 'openrouteservice'
+                    }
+                else:
+                    print(f"OpenRouteService API error: {response.status_code} - {response.text}")
             else:
-                print(f"OpenRouteService API error: {response.status_code} - {response.text}")
+                print("No OpenRouteService API key found, using fallback route")
                 
         except Exception as e:
             print(f"OpenRouteService API request failed: {e}")
         
-        # Fallback to straight-line route if API fails
+        # Fallback to straight-line route if API fails or no key
         return self.create_fallback_route(start_coords, end_coords)
     
     def create_fallback_route(self, start_coords, end_coords):
@@ -317,85 +325,119 @@ class FuelRouteView(APIView):
             "end_location": "Los Angeles, CA"
         }
         """
-        # Validate request data
-        serializer = RouteRequestSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        start_location = serializer.validated_data['start_location'].strip()
-        end_location = serializer.validated_data['end_location'].strip()
-        
-        # Check cache for existing result
-        cached_response = self.get_cached_response(start_location, end_location)
-        if cached_response:
-            return Response(cached_response, status=status.HTTP_200_OK)
-        
-        # Geocode locations
-        start_coords = self.geocode_location(start_location)
-        end_coords = self.geocode_location(end_location)
-        
-        if not start_coords:
-            return Response(
-                {'error': f'Could not find coordinates for start location: "{start_location}". Please check spelling and ensure it\'s a valid US location.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        if not end_coords:
-            return Response(
-                {'error': f'Could not find coordinates for end location: "{end_location}". Please check spelling and ensure it\'s a valid US location.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Get route (single external API call as required)
-        route_data = self.get_route_from_openrouteservice(start_coords, end_coords)
-        
-        # Get nearby fuel stations from database
-        nearby_stations = self.get_nearby_fuel_stations(route_data['coordinates'])
-        
-        # Find optimal fuel stops
-        fuel_stops, total_distance = self.find_optimal_fuel_stops(
-            route_data['coordinates'], nearby_stations
-        )
-        
-        # Calculate fuel consumption and costs
-        fuel_needed_gallons = total_distance / self.miles_per_gallon
-        
-        if fuel_stops:
-            # Distribute fuel consumption across stops
-            gallons_per_stop = fuel_needed_gallons / len(fuel_stops)
-            total_fuel_cost = sum(stop['price'] * gallons_per_stop for stop in fuel_stops)
-        else:
-            total_fuel_cost = 0
-            # If no fuel stops found, add a note
-            if total_distance > self.max_range_miles:
-                fuel_stops = [{
-                    'name': 'WARNING: No fuel stations found along route',
-                    'address': 'Please check route or add fuel stations to database',
-                    'city': 'N/A',
-                    'state': 'N/A',
-                    'price': 0.0,
-                    'latitude': 0.0,
-                    'longitude': 0.0,
-                    'distance_from_route': 0.0
-                }]
-        
-        # Prepare response data
-        response_data = {
-            'total_distance_miles': round(total_distance, 2),
-            'total_fuel_cost': round(total_fuel_cost, 2),
-            'total_fuel_needed_gallons': round(fuel_needed_gallons, 2),
-            'fuel_stops': fuel_stops,
-            'route_polyline': str(route_data['polyline']),
-            'route_coordinates': route_data['coordinates'][:50],  # Limit for response size
-            'api_info': {
-                'route_source': route_data.get('api_used', 'unknown'),
-                'stations_considered': len(nearby_stations),
-                'vehicle_range_miles': self.max_range_miles,
-                'fuel_efficiency_mpg': self.miles_per_gallon
+        try:
+            # Handle both DRF Request and Django WSGIRequest
+            if hasattr(request, 'data'):
+                data = request.data
+            else:
+                # For Django WSGIRequest, parse JSON from body
+                import json
+                try:
+                    data = json.loads(request.body.decode('utf-8'))
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    return Response(
+                        {'error': 'Invalid JSON data'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            # Validate request data
+            serializer = RouteRequestSerializer(data=data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            start_location = serializer.validated_data['start_location'].strip()
+            end_location = serializer.validated_data['end_location'].strip()
+            
+            # Check cache for existing result
+            cached_response = self.get_cached_response(start_location, end_location)
+            if cached_response:
+                return Response(cached_response, status=status.HTTP_200_OK)
+            
+            # Geocode locations
+            start_coords = self.geocode_location(start_location)
+            end_coords = self.geocode_location(end_location)
+            
+            if not start_coords:
+                return Response(
+                    {'error': f'Could not find coordinates for start location: "{start_location}". Please check spelling and ensure it\'s a valid US location.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if not end_coords:
+                return Response(
+                    {'error': f'Could not find coordinates for end location: "{end_location}". Please check spelling and ensure it\'s a valid US location.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get route (single external API call as required)
+            route_data = self.get_route_from_openrouteservice(start_coords, end_coords)
+            
+            # Get nearby fuel stations from database
+            try:
+                nearby_stations = self.get_nearby_fuel_stations(route_data['coordinates'])
+            except Exception as e:
+                print(f"Error getting fuel stations: {e}")
+                nearby_stations = []
+            
+            # Find optimal fuel stops
+            try:
+                fuel_stops, total_distance = self.find_optimal_fuel_stops(
+                    route_data['coordinates'], nearby_stations
+                )
+            except Exception as e:
+                print(f"Error finding fuel stops: {e}")
+                fuel_stops = []
+                total_distance = route_data.get('distance_miles', 0)
+            
+            # Calculate fuel consumption and costs
+            fuel_needed_gallons = total_distance / self.miles_per_gallon
+            
+            if fuel_stops:
+                # Distribute fuel consumption across stops
+                gallons_per_stop = fuel_needed_gallons / len(fuel_stops)
+                total_fuel_cost = sum(stop['price'] * gallons_per_stop for stop in fuel_stops)
+            else:
+                total_fuel_cost = 0
+                # If no fuel stops found, add a note
+                if total_distance > self.max_range_miles:
+                    fuel_stops = [{
+                        'name': 'WARNING: No fuel stations found along route',
+                        'address': 'Please check route or add fuel stations to database',
+                        'city': 'N/A',
+                        'state': 'N/A',
+                        'price': 0.0,
+                        'latitude': 0.0,
+                        'longitude': 0.0,
+                        'distance_from_route': 0.0
+                    }]
+            
+            # Prepare response data
+            response_data = {
+                'total_distance_miles': round(total_distance, 2),
+                'total_fuel_cost': round(total_fuel_cost, 2),
+                'total_fuel_needed_gallons': round(fuel_needed_gallons, 2),
+                'fuel_stops': fuel_stops,
+                'route_polyline': str(route_data.get('polyline', '')),
+                'route_coordinates': route_data.get('coordinates', [])[:50],  # Limit for response size
+                'api_info': {
+                    'route_source': route_data.get('api_used', 'unknown'),
+                    'stations_considered': len(nearby_stations),
+                    'vehicle_range_miles': self.max_range_miles,
+                    'fuel_efficiency_mpg': self.miles_per_gallon
+                }
             }
-        }
-        
-        # Cache successful response
-        self.cache_response(start_location, end_location, response_data)
-        
-        return Response(response_data, status=status.HTTP_200_OK)
+            
+            # Cache successful response
+            try:
+                self.cache_response(start_location, end_location, response_data)
+            except Exception as e:
+                print(f"Error caching response: {e}")
+            
+            return Response(response_data, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            print(f"Unexpected error in route optimization: {e}")
+            return Response(
+                {'error': 'An unexpected error occurred while processing your request. Please try again.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
