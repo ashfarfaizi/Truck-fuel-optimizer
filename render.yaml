@@ -5,7 +5,7 @@ services:
     buildCommand: |
       pip install --upgrade pip
       pip install -r requirements.txt
-      python deploy_setup.py
+      python manage.py migrate
       python manage.py collectstatic --noinput
     startCommand: gunicorn fuel_project.wsgi:application --bind 0.0.0.0:$PORT
     envVars:

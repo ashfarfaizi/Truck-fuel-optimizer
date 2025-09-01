@@ -96,11 +96,48 @@ def test_post_view(request):
             'message': 'Only POST method allowed'
         }, status=405)
 
+@csrf_exempt
+def debug_view(request):
+    """Debug endpoint to check database and basic functionality"""
+    try:
+        from fuel_route.models import FuelStation
+        
+        # Check database
+        station_count = FuelStation.objects.count()
+        
+        # Check if we can import the view
+        from fuel_route.views import FuelRouteView
+        view = FuelRouteView()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Debug info',
+            'database': {
+                'fuel_stations_count': station_count,
+                'database_working': True
+            },
+            'views': {
+                'FuelRouteView_imported': True,
+                'view_created': True
+            },
+            'environment': {
+                'debug': DEBUG,
+                'allowed_hosts': ALLOWED_HOSTS
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': f'Debug failed: {str(e)}',
+            'error_type': type(e).__name__
+        }, status=500)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/route/', fuel_route_view, name='fuel_route'),
     path('api/simple-route/', simple_route_view, name='simple_route'),
     path('api/test/', test_api_view, name='test_api'),
     path('api/test-post/', test_post_view, name='test_post'),
+    path('api/debug/', debug_view, name='debug'),
     path('', api_info, name='api_info'),
 ]
